@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Dashboard Sales — Data Dummy</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --navy: #0d1b6b; --bg: #e9e9ec; --card: #fff; --line: #d7d7dc; --text: #1c1c24; --muted: #6a6a76; --bar: #4a76a8; --red: #b91c1c; --green: #15803d; --amber: #b45309; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.45; }
+  :focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .demo-bar { background: #f3c871; color: #3d2c06; font-size: 12.5px; font-weight: 600; padding: 8px 20px; display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: space-between; }
+  .demo-bar a { text-decoration: underline; }
+  main { max-width: 1240px; margin: 0 auto; padding: 18px 20px 48px; }
+  .top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 14px; }
+  h1 { font-size: 22px; font-weight: 600; }
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; }
+  .filters label { display: grid; gap: 3px; font-size: 11px; color: var(--muted); font-weight: 500; }
+  .filters select { font: 13px 'IBM Plex Sans'; padding: 6px 8px; border: 1px solid #bdbdc6; border-radius: 3px; background: #fff; min-width: 130px; }
+  .panel { background: var(--card); border: 1px solid var(--line); margin-bottom: 14px; }
+  .panel h2 { background: var(--navy); color: #fff; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 7px 12px; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid #ececf0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  thead th { background: var(--navy); color: #fff; font-weight: 600; border-bottom: 0; }
+  th:first-child, td:first-child { text-align: left; font-weight: 600; background: #f6f6f9; }
+  thead th:first-child { background: var(--navy); }
+  .good { color: var(--green); font-weight: 600; } .bad { color: var(--red); font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid2 .panel { margin-bottom: 0; } .grid2 { margin-bottom: 14px; }
+  .pad { padding: 12px 14px 14px; }
+  .branch { display: grid; grid-template-columns: 110px 1fr 64px; align-items: center; gap: 10px; padding: 5px 0; font-size: 12.5px; }
+  .track { position: relative; height: 16px; background: #f0f0f4; }
+  .fill { position: absolute; inset: 0 auto 0 0; background: var(--bar); transition: width .4s; }
+  .fill.low { background: #c0504d; }
+  .mark { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); opacity: .65; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+  svg { width: 100%; height: auto; display: block; }
+  .note { font-size: 12px; color: var(--muted); padding: 0 14px 12px; }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } main { padding: 14px 12px 40px; } .branch { grid-template-columns: 84px 1fr 56px; } }
+</style>
+</head>
+<body>
+<div class="demo-bar">
+  <span>DEMO · Seluruh angka pada dashboard ini adalah data dummy yang dibuat otomatis di browser.</span>
+  <a href="index.html#proyek">← Kembali ke portofolio</a>
+</div>
+
+<main>
+  <div class="top">
+    <h1>Dashboard Sales — Target vs Achievement</h1>
+    <div class="filters">
+      <label>Kanal<select id="fKanal"></select></label>
+      <label>Regional<select id="fReg"></select></label>
+      <label>Periode (tabel regional &amp; cabang)<select id="fPer"></select></label>
+    </div>
+  </div>
+
+  <section class="panel"><h2>Sales Nasional</h2><div class="scroll"><table id="tNas"></table></div></section>
+
+  <div class="grid2">
+    <section class="panel"><h2 id="hReg">Sales Regional</h2><div class="scroll"><table id="tReg"></table></div></section>
+    <section class="panel"><h2 id="hBr">Sales Cabang</h2><div class="pad" id="branches"></div></section>
+  </div>
+
+  <section class="panel"><h2>Sales MoM</h2>
+    <div class="pad"><div class="legend"><span><i style="background:var(--bar)"></i>Sales</span><span><i style="background:var(--red);border-radius:50%"></i>Achievement (%)</span></div><div id="mom"></div></div>
+    <p class="note">Garis hitam pada batang cabang menandai 100% target. Cabang di bawah 95% diberi warna merah.</p>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const num = n => Math.round(n).toLocaleString("id-ID");
+const pct = v => (v * 100).toFixed(2).replace(".", ",") + "%";
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ---- Data dummy: 3 regional x 3 cabang x 8 bulan x 2 kanal ---- */
+const MONTHS = ["202601","202602","202603","202604","202605","202606","202607","202608"];
+const REG = { "Regional A": ["Cabang A1","Cabang A2","Cabang A3"], "Regional B": ["Cabang B1","Cabang B2","Cabang B3"], "Regional C": ["Cabang C1","Cabang C2","Cabang C3"] };
+const KANAL = ["Kanal X", "Kanal Y"];
+const r = rng(2026), rows = [];
+Object.entries(REG).forEach(([reg, brs], ri) => brs.forEach((br, bi) => KANAL.forEach((k, ki) => {
+  const base = (520 + ri * 90 + bi * 60) * (ki ? 0.55 : 0.85);
+  MONTHS.forEach((m, mi) => {
+    const target = Math.round(base * (1 + mi * 0.025) * (0.97 + r() * 0.06));
+    const ach = 0.86 + r() * 0.24 - (bi === 2 && ri === 1 ? 0.06 : 0);
+    rows.push({ reg, br, k, m, target, sales: Math.round(target * ach) });
+  });
+})));
+
+/* ---- Filter UI ---- */
+const S = { kanal: "Semua", reg: "Semua", per: MONTHS[MONTHS.length - 1] };
+const opt = (el, list, val) => { el.innerHTML = list.map(x => `<option ${x === val ? "selected" : ""}>${x}</option>`).join(""); };
+opt($("#fKanal"), ["Semua", ...KANAL], S.kanal); opt($("#fReg"), ["Semua", ...Object.keys(REG)], S.reg); opt($("#fPer"), [...MONTHS].reverse(), S.per);
+$("#fKanal").onchange = e => { S.kanal = e.target.value; draw(); };
+$("#fReg").onchange = e => { S.reg = e.target.value; draw(); };
+$("#fPer").onchange = e => { S.per = e.target.value; draw(); };
+
+const agg = list => { const t = list.reduce((a, x) => a + x.target, 0), s = list.reduce((a, x) => a + x.sales, 0); return { t, s, a: t ? s / t : 0 }; };
+const cls = a => a >= 1 ? "good" : a < 0.95 ? "bad" : "";
+const base = () => rows.filter(x => (S.kanal === "Semua" || x.k === S.kanal));
+const scoped = () => base().filter(x => S.reg === "Semua" || x.reg === S.reg);
+
+function draw() {
+  /* Sales Nasional (semua bulan) */
+  const byM = MONTHS.map(m => ({ m, ...agg(scoped().filter(x => x.m === m)) }));
+  $("#tNas").innerHTML = `<thead><tr><th>${S.reg === "Semua" ? "Nasional" : S.reg}</th>${byM.map(x => `<th>${x.m}</th>`).join("")}</tr></thead><tbody>
+    <tr><td>Sales</td>${byM.map(x => `<td>${num(x.s)}</td>`).join("")}</tr>
+    <tr><td>Target</td>${byM.map(x => `<td>${num(x.t)}</td>`).join("")}</tr>
+    <tr><td>ach</td>${byM.map(x => `<td class="${cls(x.a)}">${pct(x.a)}</td>`).join("")}</tr></tbody>`;
+
+  /* Sales Regional (periode terpilih) */
+  const regs = Object.keys(REG).map(g => ({ g, ...agg(base().filter(x => x.reg === g && x.m === S.per)) }));
+  $("#hReg").textContent = "Sales Regional · " + S.per;
+  $("#tReg").innerHTML = `<thead><tr><th></th>${regs.map(x => `<th>${x.g.toUpperCase()}</th>`).join("")}</tr></thead><tbody>
+    <tr><td>Target</td>${regs.map(x => `<td>${num(x.t)}</td>`).join("")}</tr>
+    <tr><td>Sales</td>${regs.map(x => `<td>${num(x.s)}</td>`).join("")}</tr>
+    <tr><td>ach</td>${regs.map(x => `<td class="${cls(x.a)}">${pct(x.a)}</td>`).join("")}</tr></tbody>`;
+
+  /* Sales Cabang (periode terpilih) */
+  const brs = Object.entries(REG).filter(([g]) => S.reg === "Semua" || g === S.reg).flatMap(([g, l]) => l.map(b => ({ b, ...agg(base().filter(x => x.br === b && x.m === S.per)) })));
+  const max = 1.25;
+  $("#hBr").textContent = "Sales Cabang · " + S.per;
+  $("#branches").innerHTML = brs.map(x => `<div class="branch"><span>${x.b}</span><div class="track"><div class="fill ${x.a < 0.95 ? "low" : ""}" style="width:${Math.min(x.a / max, 1) * 100}%"></div><div class="mark" style="left:${100 / max}%"></div></div><b class="${cls(x.a)}">${pct(x.a)}</b></div>`).join("");
+
+  /* Sales MoM: batang sales + garis ach */
+  const W = 900, H = 250, L = 52, R = 52, T = 16, B = 30, pw = W - L - R, ph = H - T - B;
+  const maxS = Math.max(...byM.map(x => x.s)) * 1.15, minA = 0.8, maxA = 1.2, n = byM.length, bw = pw / n * 0.55;
+  const X = i => L + pw / n * (i + .5), YS = v => T + ph - v / maxS * ph, YA = v => T + ph - (v - minA) / (maxA - minA) * ph;
+  $("#mom").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales per bulan dan achievement">
+    ${[0, .25, .5, .75, 1].map(f => `<line x1="${L}" x2="${W - R}" y1="${T + ph - f * ph}" y2="${T + ph - f * ph}" stroke="#e4e4ea"/><text x="${L - 8}" y="${T + ph - f * ph + 4}" text-anchor="end" font-size="11" fill="#6a6a76">${num(maxS * f)}</text><text x="${W - R + 8}" y="${T + ph - f * ph + 4}" font-size="11" fill="#b91c1c">${Math.round((minA + f * (maxA - minA)) * 100)}%</text>`).join("")}
+    <line x1="${L}" x2="${W - R}" y1="${YA(1)}" y2="${YA(1)}" stroke="#b91c1c" stroke-dasharray="4 4" opacity=".5"/>
+    ${byM.map((x, i) => `<rect x="${X(i) - bw / 2}" y="${YS(x.s)}" width="${bw}" height="${T + ph - YS(x.s)}" fill="var(--bar)"><title>${x.m}: sales ${num(x.s)}, target ${num(x.t)}, ach ${pct(x.a)}</title></rect><text x="${X(i)}" y="${T + ph + 18}" text-anchor="middle" font-size="11" fill="#6a6a76">${x.m}</text>`).join("")}
+    <path d="${byM.map((x, i) => (i ? "L" : "M") + X(i) + " " + YA(x.a)).join(" ")}" fill="none" stroke="#b91c1c" stroke-width="2"/>
+    ${byM.map((x, i) => `<circle cx="${X(i)}" cy="${YA(x.a)}" r="4" fill="#fff" stroke="#b91c1c" stroke-width="2"/><text x="${X(i)}" y="${YA(x.a) - 9}" text-anchor="middle" font-size="10.5" fill="#1c1c24">${pct(x.a)}</text>`).join("")}
+  </svg>`;
+}
+draw();
+</script>
+</body>
+</html>
