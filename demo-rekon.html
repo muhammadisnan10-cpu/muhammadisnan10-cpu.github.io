@@ -260,7 +260,7 @@ function viewIndex() {
   <div class="grid-stats">
     <div class="stat-box navy"><div class="label">Total Periode</div><div class="value">${ps.length}</div></div>
     <div class="stat-box"><div class="label">Total Hak Mitra</div><div class="value">${rp(tM)}</div><div class="sub">akumulasi semua periode</div></div>
-    <div class="stat-box green"><div class="label">Total Hak Telkom</div><div class="value">${rp(tT)}</div><div class="sub">akumulasi semua periode</div></div>
+    <div class="stat-box green"><div class="label">Total Hak Perusahaan</div><div class="value">${rp(tT)}</div><div class="sub">akumulasi semua periode</div></div>
   </div>
   <div class="card">
     <div class="toolbar"><h2>Daftar Periode</h2><a class="btn" href="#/upload">+ Upload Periode Baru</a></div>
@@ -282,7 +282,7 @@ function viewIndex() {
 }
 
 const D = { id: 0, ket: null, tren: null, q: "", sort: "sn", dir: 1, page: 1 };
-const COLS = [["sn", "Service Number"], ["paket", "Paket"], ["sto", "STO"], ["odp", "ODP"], ["b2b", "B2B Cost", 1], ["wsa", "WSA Cost", 1], ["shared", "Shared Billed", 1], ["telkom", "Hak Telkom", 1], ["psb", "OTC PSB", 1], ["pda", "OTC PDA", 1], ["mitra", "Hak Mitra", 1], ["tgl", "Tgl PS"], ["lalu", "Status Bulan Lalu"], ["ket", "Status"], ["reg", "Regional"], ["tren", "Tren Revenue"]];
+const COLS = [["sn", "Service Number"], ["paket", "Paket"], ["sto", "STO"], ["odp", "ODP"], ["b2b", "B2B Cost", 1], ["wsa", "WSA Cost", 1], ["shared", "Shared Billed", 1], ["telkom", "Hak Perusahaan", 1], ["psb", "OTC PSB", 1], ["pda", "OTC PDA", 1], ["mitra", "Hak Mitra", 1], ["tgl", "Tgl PS"], ["lalu", "Status Bulan Lalu"], ["ket", "Status"], ["reg", "Regional"], ["tren", "Tren Revenue"]];
 
 function viewPeriode(id) {
   const p = periodes.find(x => x.id === id); if (!p) return `<p>Periode tidak ditemukan. <a href="#/">Kembali</a></p>`;
@@ -305,7 +305,7 @@ function viewPeriode(id) {
     <div class="stat-box navy"><div class="label">${ICON.swap}B2B Cost</div><div class="value">${rp(p.b2b)}</div></div>
     <div class="stat-box"><div class="label">${ICON.pct}Hak Mitra MRC</div><div class="value">${rp(p.mrc)}</div></div>
     <div class="stat-box"><div class="label">${ICON.users}Hak Mitra</div><div class="value">${rp(p.mitra)}</div></div>
-    <div class="stat-box green"><div class="label">${ICON.build}Hak Telkom</div><div class="value">${rp(p.telkom)}</div></div>
+    <div class="stat-box green"><div class="label">${ICON.build}Hak Perusahaan</div><div class="value">${rp(p.telkom)}</div></div>
   </div>
   <div class="card">
     <div class="toolbar"><h2>Rincian per Status &amp; Tren Revenue</h2><span class="card-note">Klik kartu untuk memfilter tabel di bawah</span></div>
@@ -363,13 +363,13 @@ function viewRekap() {
   <div class="grid-stats">
     <div class="stat-box navy"><div class="label">Periode</div><div class="value">${n}</div></div>
     <div class="stat-box"><div class="label">Grand Total Hak Mitra</div><div class="value">${rp(totM)}</div></div>
-    <div class="stat-box green"><div class="label">Grand Total Hak Telkom</div><div class="value">${rp(totT)}</div></div>
+    <div class="stat-box green"><div class="label">Grand Total Hak Perusahaan</div><div class="value">${rp(totT)}</div></div>
   </div>
   <div class="card">
-    <h2>Tren Hak Mitra vs Hak Telkom</h2>
-    <div class="legend"><span><i style="background:var(--chart-teal)"></i>Hak Mitra</span><span><i style="background:var(--gold)"></i>Hak Telkom</span></div>
+    <h2>Tren Hak Mitra vs Hak Perusahaan</h2>
+    <div class="legend"><span><i style="background:var(--chart-teal)"></i>Hak Mitra</span><span><i style="background:var(--gold)"></i>Hak Perusahaan</span></div>
     <div class="linechart-wrap" id="lc">
-      <svg class="linechart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tren hak mitra dan hak Telkom per periode">
+      <svg class="linechart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tren hak mitra dan hak perusahaan per periode">
         ${grid}
         ${ps.map((p, i) => `<text x="${X(i)}" y="${T + ph + 22}" text-anchor="middle" font-size="11" fill="#726c60">${BULAN[p.month].slice(0, 3)} ${String(p.year).slice(2)}</text>`).join("")}
         <path d="${path("mitra")}" fill="none" stroke="var(--chart-teal)" stroke-width="2.5" stroke-linejoin="round"/>
@@ -384,7 +384,7 @@ function viewRekap() {
   </div>
   <div class="card">
     <h2>Rekap per Periode</h2>
-    <div class="table-wrap"><table><thead><tr><th>Periode</th><th class="num">Service Number</th><th class="num">Baru</th><th class="num">Belum Tertagih</th><th class="num">WSA Cost</th><th class="num">B2B Cost</th><th class="num">Hak Mitra</th><th class="num">Hak Telkom</th></tr></thead><tbody>
+    <div class="table-wrap"><table><thead><tr><th>Periode</th><th class="num">Service Number</th><th class="num">Baru</th><th class="num">Belum Tertagih</th><th class="num">WSA Cost</th><th class="num">B2B Cost</th><th class="num">Hak Mitra</th><th class="num">Hak Perusahaan</th></tr></thead><tbody>
     ${[...ps].reverse().map(p => `<tr><td><a href="#/periode/${p.id}" style="font-weight:700">${label(p)}</a></td><td class="num">${num(p.n)}</td><td class="num">${num(p.baru)}</td><td class="num">${num(p.unbilled)}</td><td class="num">${num(p.wsa)}</td><td class="num">${num(p.b2b)}</td><td class="num"><b>${num(p.mitra)}</b></td><td class="num">${num(p.telkom)}</td></tr>`).join("")}
     <tr style="background:#faf8f3;font-weight:800"><td>Grand Total</td><td class="num">${num(totN)}</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">${num(totM)}</td><td class="num">${num(totT)}</td></tr>
     </tbody></table></div>
@@ -428,7 +428,7 @@ function bindChart() {
   svg.querySelectorAll(".band").forEach(b => {
     b.addEventListener("mouseenter", () => {
       const p = ps[+b.dataset.i], bb = b.getBoundingClientRect(), wb = wrap.getBoundingClientRect();
-      tip.innerHTML = `<b>${label(p)}</b><br>Hak Mitra: ${rp(p.mitra)}<br>Hak Telkom: ${rp(p.telkom)}`;
+      tip.innerHTML = `<b>${label(p)}</b><br>Hak Mitra: ${rp(p.mitra)}<br>Hak Perusahaan: ${rp(p.telkom)}`;
       tip.style.left = (bb.left + bb.width / 2 - wb.left) + "px"; tip.style.top = (bb.top - wb.top + 20) + "px"; tip.style.opacity = 1;
     });
     b.addEventListener("mouseleave", () => tip.style.opacity = 0);
@@ -443,10 +443,10 @@ function openBA(id) {
     <table><tbody>
       <tr><td>Jumlah service number</td><td class="num">${num(p.n)}</td></tr>
       <tr><td>Hak Mitra</td><td class="num"><b>${rp(p.mitra)}</b></td></tr>
-      <tr><td>Hak Telkom</td><td class="num"><b>${rp(p.telkom)}</b></td></tr>
+      <tr><td>Hak Perusahaan</td><td class="num"><b>${rp(p.telkom)}</b></td></tr>
     </tbody></table>
     <p>Terbilang hak mitra: <i>${terbilang(p.mitra)} rupiah</i>.</p>
-    <div class="sign"><div>Pihak Mitra<span></span>(Nama PIC Mitra)</div><div>Pihak Telkom<span></span>(Nama PIC Telkom)</div></div>
+    <div class="sign"><div>Pihak Mitra<span></span>(Nama PIC Mitra)</div><div>Pihak perusahaan<span></span>(Nama PIC Perusahaan)</div></div>
     <div class="paper-actions"><span>Pada aplikasi asli, file .docx dibuat otomatis dari template.</span><button class="btn secondary sm" data-close>Tutup</button></div>`;
   $("#modal").hidden = false;
 }
