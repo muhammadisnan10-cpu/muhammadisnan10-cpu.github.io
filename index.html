@@ -339,6 +339,7 @@
   /* ---------- Toggle bahasa ---------- */
   .nav-actions { display: flex; align-items: center; gap: 10px; }
   .langsw { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); }
+  .langsw[hidden] { display: none; }
   .langsw button { font: 500 12px/1 var(--mono); letter-spacing: .04em; padding: 7px 11px; border: 0; border-radius: 99px; background: transparent; color: var(--ink-2); cursor: pointer; transition: background .15s, color .15s; }
   .langsw button:hover { color: var(--ink); }
   .langsw button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
@@ -430,7 +431,7 @@
         <a href="#kontak">Kontak</a>
       </nav>
       <div class="nav-actions">
-        <div class="langsw" role="group" aria-label="Bahasa / Language"><button type="button" data-lang="id" aria-pressed="true">ID</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
+        <div class="langsw" role="group" aria-label="Bahasa / Language" hidden><button type="button" data-lang="id" aria-pressed="true">ID</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
         <a class="btn sm" href="assets/CV_Muhammad_Isnan_Data_Analyst.pdf" download><svg viewBox="0 0 24 24"><use href="#i-dl"/></svg>Unduh CV</a>
       </div>
     </div>
@@ -1264,6 +1265,7 @@ ORDER BY a.period;`
   function setLang(l) {
     if (!prepared) prepare();
     const en = l === "en";
+    if (en) { const sw = document.querySelector(".langsw"); if (sw) sw.hidden = false; }
     window.__lang = l;
     store.forEach(s => {
       if (s.attr) s.el.setAttribute(s.attr, en ? EN_ATTR[s.key] : s.id);
