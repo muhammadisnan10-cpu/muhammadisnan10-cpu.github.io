@@ -336,6 +336,13 @@
   .c-item .v { font-size: 16px; overflow-wrap: anywhere; }
   .foot { padding: 28px 0 36px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font: 400 12px/1.5 var(--mono); color: var(--ink-3); }
 
+  /* ---------- Toggle bahasa ---------- */
+  .nav-actions { display: flex; align-items: center; gap: 10px; }
+  .langsw { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); }
+  .langsw button { font: 500 12px/1 var(--mono); letter-spacing: .04em; padding: 7px 11px; border: 0; border-radius: 99px; background: transparent; color: var(--ink-2); cursor: pointer; transition: background .15s, color .15s; }
+  .langsw button:hover { color: var(--ink); }
+  .langsw button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
   /* ---------- Mobile action bar ---------- */
   .mbar { display: none; }
 
@@ -422,7 +429,10 @@
         <a href="#pengalaman">Pengalaman</a>
         <a href="#kontak">Kontak</a>
       </nav>
-      <a class="btn sm" href="assets/CV_Muhammad_Isnan_Data_Analyst.pdf" download><svg viewBox="0 0 24 24"><use href="#i-dl"/></svg>Unduh CV</a>
+      <div class="nav-actions">
+        <div class="langsw" role="group" aria-label="Bahasa / Language"><button type="button" data-lang="id" aria-pressed="true">ID</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div>
+        <a class="btn sm" href="assets/CV_Muhammad_Isnan_Data_Analyst.pdf" download><svg viewBox="0 0 24 24"><use href="#i-dl"/></svg>Unduh CV</a>
+      </div>
     </div>
   </div>
 </header>
@@ -969,15 +979,19 @@ ORDER BY a.period;</code></pre></div>
   const SQL_KW = "SELECT|FROM|WHERE|LEFT|RIGHT|INNER|JOIN|ON|GROUP|BY|ORDER|ROLLUP|CASE|WHEN|THEN|ELSE|END|AS|AND|OR|IN|LIKE|NOT|NULL|IS|SUM|COUNT|MAX|MIN|AVG|COALESCE|TO_CHAR|LIMIT|DISTINCT|HAVING";
   const W = "(?<![A-Za-z0-9_])", E = "(?![A-Za-z0-9_])";
   const SQL_RE = new RegExp("(--.*)|('(?:[^']|'')*')|" + W + "(" + SQL_KW + ")" + E + "|" + W + "([0-9]+)" + E, "gi");
-  document.querySelectorAll(".q-code").forEach(box => {
-    const code = box.querySelector("code"), raw = code.textContent;
+  function hl(raw) {
     const esc = raw.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    code.innerHTML = esc.replace(SQL_RE, (m, c, s, k, n) => c ? '<span class="c">' + m + '</span>' : s ? '<span class="s">' + m + '</span>' : k ? '<span class="k">' + m + '</span>' : '<span class="n">' + m + '</span>');
+    return esc.replace(SQL_RE, (m, c, s, k, n) => c ? '<span class="c">' + m + '</span>' : s ? '<span class="s">' + m + '</span>' : k ? '<span class="k">' + m + '</span>' : '<span class="n">' + m + '</span>');
+  }
+  document.querySelectorAll(".q-code").forEach(box => {
+    const code = box.querySelector("code");
+    box.dataset.rawId = code.textContent; box.dataset.cur = code.textContent;
+    code.innerHTML = hl(code.textContent);
     box.querySelector(".q-copy").addEventListener("click", async e => {
-      const btn = e.currentTarget;
-      try { await navigator.clipboard.writeText(raw); btn.textContent = "Tersalin ✓"; }
-      catch (err) { btn.textContent = "Gagal menyalin"; }
-      setTimeout(() => btn.textContent = "Salin", 1800);
+      const btn = e.currentTarget, en = window.__lang === "en";
+      try { await navigator.clipboard.writeText(box.dataset.cur); btn.textContent = en ? "Copied ✓" : "Tersalin ✓"; }
+      catch (err) { btn.textContent = en ? "Copy failed" : "Gagal menyalin"; }
+      setTimeout(() => btn.textContent = window.__lang === "en" ? "Copy" : "Salin", 1800);
     });
   });
 
@@ -990,6 +1004,296 @@ ORDER BY a.period;</code></pre></div>
     });
   }, { threshold: 0.1 });
   document.querySelectorAll(".rv").forEach(el => io.observe(el));
+
+  // ===== Bahasa ID / EN =====
+  // Kunci = teks Indonesia (spasi dirapikan), nilai = terjemahan Inggris. Teks Indonesia tetap menjadi isi asli halaman.
+  const EN = {
+    // Menu & umum
+    "Profil": "Profile", "Kontribusi": "What I do", "Proyek": "Projects", "Keahlian": "Skills",
+    "Pengalaman": "Experience", "Kontak": "Contact", "Unduh CV": "Download CV", "Unduh CV (PDF)": "Download CV (PDF)",
+    // Hero
+    "Terbuka untuk peluang baru": "Open to new opportunities",
+    "Halo, saya": "Hi, I'm",
+    "Data Analyst dengan 9+ tahun pengalaman mengubah data penjualan dan operasional menjadi dashboard, laporan KPI, dan insight untuk keputusan manajemen.":
+      "<b>Data Analyst</b> with <b>9+ years</b> of experience turning sales and operational data into dashboards, KPI reports, and insights for management decisions.",
+    "Bekasi, Jawa Barat": "Bekasi, West Java",
+    "Industri telekomunikasi": "Telecommunications industry",
+    "Hubungi via WhatsApp": "Contact via WhatsApp",
+    "+ tahun": "+ years", "pengalaman di bidang data": "of experience in data", "Laporan KPI": "KPI Report",
+    // Statistik
+    "+ thn": "+ yrs", "Analisis & pengelolaan data": "Data analysis & management",
+    "Perusahaan": "Companies", "Lini bisnis": "Business lines", "Database SQL": "SQL databases",
+    // Profil
+    "Sekilas tentang saya.": "About me at a glance.",
+    "Tentang": "About",
+    "Saya Data Analyst dan Data Support dengan pengalaman 9+ tahun dalam data validation, database management, dan analisis performa penjualan di industri telekomunikasi skala besar — mencakup wholesale service, consumer fulfilment, dan partnership channel.":
+      "I am a Data Analyst and Data Support specialist with <b>9+ years</b> of experience in <b>data validation, database management, and sales performance analysis</b> in the large-scale telecommunications industry — covering wholesale service, consumer fulfilment, and partnership channels.",
+    "Terbiasa menyusun dashboard, laporan KPI, dan reconciliation data untuk mendukung keputusan manajemen di tingkat unit hingga regional.":
+      "Experienced in building <b>dashboards, KPI reports, and data reconciliation</b> to support management decisions from unit to regional level.",
+    "Ringkasan untuk rekruter": "Recruiter summary",
+    "Posisi": "Position", "Industri": "Industry", "Tools utama": "Main tools", "Pendidikan": "Education", "Bahasa": "Languages", "Lokasi": "Location",
+    "9+ tahun (2016 — sekarang)": "9+ years (2016 — present)",
+    "Telekomunikasi, digital agency": "Telecommunications, digital agency",
+    "S1 Pendidikan Ekonomi, UPI": "Bachelor's in Economic Education, UPI",
+    "Indonesia (native), English (intermediate)": "Indonesian (native), English (intermediate)",
+    // Kontribusi
+    "Apa yang bisa saya kerjakan untuk tim Anda.": "What I can do for your team.",
+    "Enam hal yang rutin saya tangani selama bekerja di Telkom Indonesia, Telkomsel, dan Inbound.id.":
+      "Six things I handle regularly across my work at Telkom Indonesia, Telkomsel, and Inbound.id.",
+    "Dashboard & laporan KPI": "Dashboards & KPI reports",
+    "Laporan harian, mingguan, dan bulanan atas target penjualan, pipeline, dan performa tim sales.":
+      "Daily, weekly, and monthly reports on sales targets, pipeline, and sales team performance.",
+    "Analisis penjualan": "Sales analysis",
+    "Mengidentifikasi tren, peluang pasar, dan kinerja tim sales, lengkap dengan insight untuk meningkatkan konversi.":
+      "Identifying trends, market opportunities, and sales team performance, with insights to improve conversion.",
+    "Validasi & rekonsiliasi data": "Data validation & reconciliation",
+    "Memastikan data sales akurat dan valid sebelum dipakai sebagai dasar laporan dan keputusan.":
+      "Making sure sales data is accurate and valid before it becomes the basis for reports and decisions.",
+    "Mengelola database pelanggan dan transaksi penjualan agar selalu ter-update dan berjalan baik setiap hari.":
+      "Managing customer and sales transaction databases so they stay up to date and run smoothly every day.",
+    "Monitoring deployment & Capex": "Deployment monitoring & Capex",
+    "Memantau progress pembangunan ODP dan alat produksi, serta menghitung kebutuhan Capex untuk perencanaan.":
+      "Monitoring the build progress of ODPs and production equipment, and calculating Capex needs for planning.",
+    "Dukungan data lintas tim": "Cross-team data support",
+    "Menyediakan kebutuhan data performansi untuk tim sales dan manajemen, dari level unit hingga regional.":
+      "Providing performance data for sales teams and management, from unit to regional level.",
+    // Proyek
+    "Proyek pilihan.": "Selected projects.",
+    "Beberapa pekerjaan yang paling menggambarkan cara saya bekerja. Data pada setiap tangkapan layar telah disamarkan.":
+      "A few pieces of work that best show how I work. Data in every screenshot has been anonymized.",
+    "Masalah": "Problem", "Yang saya lakukan": "What I did", "Hasil": "Result",
+    "Job ETL Pentaho end-to-end dengan notifikasi Telegram": "End-to-end Pentaho ETL job with Telegram notifications",
+    "Pembaruan tabel pelaporan terdiri dari banyak langkah yang harus berjalan berurutan, dan statusnya perlu bisa dipantau tanpa membuka Pentaho.":
+      "Refreshing the reporting tables involves many steps that must run in sequence, and their status needed to be trackable without opening Pentaho.",
+    "Merancang satu job berisi 6 skrip pembuatan tabel LIS, 21 langkah insert (TR1A–TR7B), pembuatan ulang tabel DWH, penambahan index, serta notifikasi Telegram saat job mulai dan saat berhasil.":
+      "Designed a single job containing 6 LIS table-creation scripts, 21 insert steps (TR1A–TR7B), DWH table re-creation, index creation, and Telegram notifications when the job starts and when it succeeds.",
+    "Seluruh alur berjalan berurutan dalam satu job, dan status mulai/selesai terkirim otomatis ke Telegram.":
+      "The whole flow runs in sequence within one job, and start/finish status is sent to Telegram automatically.",
+    "Notifikasi Telegram": "Telegram notifications",
+    "Tableau · tampilan ulang dengan data dummy": "Tableau · rebuilt with dummy data",
+    "Dashboard Target vs Achievement sales: nasional, regional, cabang": "Sales Target vs Achievement dashboard: national, regional, branch",
+    "Pencapaian target sales perlu dipantau tiap bulan di beberapa level sekaligus, dan sulit dibaca bila terpisah di banyak file.":
+      "Sales target achievement had to be tracked monthly at several levels at once, and was hard to read when spread across many files.",
+    "Merancang dashboard Tableau berisi tabel Target vs Achievement per bulan, ringkasan per regional, tren Sales MoM, dan peringkat cabang, lengkap dengan filter kanal dan area. Halaman demo ini adalah versi dummy dari dashboard tersebut.":
+      "Designed a Tableau dashboard with a monthly Target vs Achievement table, a regional summary, the Sales MoM trend, and a branch ranking, complete with channel and area filters. The demo page is a dummy-data version of that dashboard.",
+    "Posisi pencapaian bisa dibaca dari tingkat nasional sampai cabang dalam satu halaman, dan cabang yang tertinggal langsung terlihat.":
+      "Achievement can be read from national level down to branch level on one page, and lagging branches stand out immediately.",
+    "Coba demo interaktif": "Try the interactive demo",
+    "Aplikasi web · PHP + MySQL · demo memakai data dummy": "Web app · PHP + MySQL · demo uses dummy data",
+    "Dashboard rekonsiliasi LIS & Billing otomatis": "Automated LIS & Billing reconciliation dashboard",
+    "Rekonsiliasi bulanan dikerjakan manual di Excel: menggabungkan dua file besar, mencocokkan service number, mengklasifikasi status, lalu menghitung bagi hasil.":
+      "Monthly reconciliation was done manually in Excel: merging two large files, matching service numbers, classifying statuses, then calculating the revenue share.",
+    "Membangun aplikasi web yang menerima file export LIS & Billing, mencocokkan per service number, mengklasifikasi status, dan menghitung hak mitra dan hak perusahaan. Dilengkapi penyesuaian prorate, rekap tren antar periode, dan Berita Acara Rekon otomatis.":
+      "Built a web app that takes the LIS & Billing exports, matches records per service number, classifies statuses, and calculates the partner's and the company's share. It also includes prorate adjustments, period-over-period trend summaries, and automatically generated reconciliation reports (Berita Acara).",
+    "Proses yang tadinya manual di Excel berjalan otomatis dari satu kali upload, dan setiap angka bisa ditelusuri sampai ke tiap service number.":
+      "A process that used to be manual in Excel now runs automatically from a single upload, and every figure can be traced down to each service number.",
+    "Proyek sampingan · Aplikasi web · sedang dikembangkan": "Side project · Web app · in development",
+    "Pace: aplikasi pelacak kalori harian": "Pace: a daily calorie tracking app",
+    "Ingin target kalori harian yang dihitung otomatis dari berat, tinggi, umur, tingkat aktivitas, dan tujuan (cutting, maintain, bulking), tanpa spreadsheet.":
+      "I wanted a daily calorie target calculated automatically from weight, height, age, activity level, and goal (cutting, maintain, bulking), without a spreadsheet.",
+    "Sebagai konseptor, saya merumuskan kebutuhan pengguna, alur pemakaian, dan logika perhitungan targetnya. Aplikasi dibangun dengan bantuan AI; saya yang mengarahkan dan menguji, dan sudah saya pakai sendiri.":
+      "As the concept owner, I defined the user needs, the usage flow, and the target calculation logic. The app was built with AI assistance; I directed and tested it, and I use it myself.",
+    "Sedang dikembangkan; seluruh fitur yang ada sudah berfungsi. Data pengguna disimpan di perangkat, tidak dikirim ke server.":
+      "In development; all existing features are working. User data is stored on the device and is not sent to a server.",
+    "Konsep produk": "Product concept",
+    "Coba aplikasi": "Try the app",
+    // Contoh query
+    "Contoh query": "Query examples",
+    "SQL yang saya tulis di PostgreSQL.": "SQL I write in PostgreSQL.",
+    "Tiga contoh dari pekerjaan sehari-hari: pivot dengan subtotal, validasi dua sumber data, dan penggabungan tabel. Klik untuk membuka.":
+      "Three examples from day-to-day work: a pivot with subtotals, validation across two data sources, and a table join. Click to open.",
+    "Pivot sales bulanan per regional dengan total nasional": "Monthly sales pivot by region with a national total",
+    "Satu tabel ringkas yang langsung bisa dipakai untuk laporan target vs pencapaian.": "One compact table that can go straight into a target vs achievement report.",
+    "Validasi data: bandingkan jumlah harian antara tabel olahan dan tabel sumber": "Data validation: compare daily counts between the processed table and the source table",
+    "Memastikan angka penjualan di laporan sama dengan data sumbernya sebelum dipakai.": "Making sure the sales figures in a report match the source data before they are used.",
+    "Penjualan per cluster beserta atribut proyek": "Sales per cluster with project attributes",
+    "Menggabungkan transaksi penjualan dengan data proyek untuk dianalisis per wilayah dan jenis kemitraan.":
+      "Joining sales transactions with project data to analyze by area and partnership type.",
+    "Filter multi-periode": "Multi-period filter",
+    "Salin": "Copy",
+    "Nama skema, tabel, dan kolom telah diganti dengan nama generik, dan sebagian kolom serta bulan dipangkas agar ringkas.":
+      "Schema, table, and column names have been replaced with generic ones, and some columns and months were trimmed for brevity.",
+    // Keahlian
+    "Keahlian teknis": "Technical skills", "Tools yang saya pakai setiap hari.": "Tools I use every day.",
+    "Web Analytics & Lainnya": "Web Analytics & Others",
+    // Cara kerja
+    "Cara kerja": "How I work", "Dari data mentah sampai keputusan manajemen.": "From raw data to management decisions.",
+    "Kumpulkan": "Collect", "Menarik data dari database, sistem penjualan, dan web analytics.": "Pulling data from databases, sales systems, and web analytics.",
+    "Validasi": "Validate", "Memeriksa dan merekonsiliasi data agar akurat dan konsisten.": "Checking and reconciling data so it is accurate and consistent.",
+    "Analisis": "Analyze", "Menghitung KPI, membaca tren, dan menilai kinerja terhadap target.": "Calculating KPIs, reading trends, and assessing performance against targets.",
+    "Visualisasi": "Visualize", "Menyajikan hasil dalam dashboard, Excel, dan presentasi.": "Presenting results in dashboards, Excel, and presentations.",
+    "Laporkan": "Report", "Laporan rutin harian, mingguan, dan bulanan untuk manajemen.": "Regular daily, weekly, and monthly reports for management.",
+    // Pengalaman
+    "Perjalanan karier, 2016 — sekarang.": "Career journey, 2016 — present.",
+    "Linimasa karier": "Career timeline", "Agensi": "Agency",
+    "Kontrak melalui PT ISH": "Contract under PT ISH", "Saat ini": "Current",
+    "Agu 2017 — Sekarang": "Aug 2017 — Present", "Nov 2024 — Sekarang": "Nov 2024 — Present", "Agu 2017 — Jun 2023": "Aug 2017 — Jun 2023",
+    "Jul 2023 — Okt 2024": "Jul 2023 — Oct 2024", "Agu 2016 — Jan 2017": "Aug 2016 — Jan 2017", "Agu 2009 — Feb 2014": "Aug 2009 — Feb 2014",
+    "Monitoring data deployment pembangunan ODP (Optical Distribution Point) dan alat produksi.":
+      "<b>Monitoring deployment data</b> for ODP (Optical Distribution Point) and production equipment build-out.",
+    "Menyusun laporan mingguan dan bulanan atas progress pembangunan alat produksi untuk kebutuhan planning & resource management.":
+      "Preparing <b>weekly and monthly reports</b> on production equipment build progress for planning & resource management needs.",
+    "Menghitung kebutuhan Capex sebagai dasar perencanaan dan evaluasi kelayakan pembangunan.":
+      "<b>Calculating Capex requirements</b> as the basis for planning and for evaluating build feasibility.",
+    "Mengelola database pelanggan dan transaksi penjualan agar ter-update dan berjalan baik setiap hari.":
+      "<b>Managing the customer and sales transaction database</b> so it stays up to date and runs smoothly every day.",
+    "Menganalisis data penjualan untuk mengidentifikasi tren, peluang pasar, dan kinerja tim sales.":
+      "<b>Analyzing sales data</b> to identify trends, market opportunities, and sales team performance.",
+    "Memvisualisasikan hasil analisis dalam laporan Excel, presentasi PowerPoint, dan mockup dashboard sales.":
+      "<b>Visualizing analysis results</b> in Excel reports, PowerPoint presentations, and sales dashboard mockups.",
+    "Menyusun laporan harian/mingguan/bulanan atas target penjualan, pipeline, dan performa tim sales; menghitung dan memantau KPI.":
+      "Preparing <b>daily/weekly/monthly reports</b> on sales targets, pipeline, and sales team performance; calculating and monitoring KPIs.",
+    "Mendukung kebutuhan data performansi tim sales di level unit maupun regional dengan insight untuk meningkatkan konversi.":
+      "Supporting the sales team's performance data needs at <b>both unit and regional level</b>, with insights to improve conversion.",
+    "Menyusun laporan harian/mingguan/bulanan atas target penjualan, pipeline, dan performa tim sales partnership; menghitung dan memantau KPI.":
+      "Preparing <b>daily/weekly/monthly reports</b> on sales targets, pipeline, and partnership sales team performance; calculating and monitoring KPIs.",
+    "Rekonsiliasi data sales di lokasi partnership untuk memastikan akurasi laporan.":
+      "<b>Reconciling sales data</b> at partnership locations to ensure report accuracy.",
+    "Mengambil data dari Google Analytics, Search Console, dan Google Trends untuk mendukung analisis, laporan mingguan/bulanan, dan presentasi klien.":
+      "Pulling data from <b>Google Analytics, Search Console, and Google Trends</b> to support analysis, weekly/monthly reports, and client presentations.",
+    "Memastikan validitas dan akurasi data yang dihasilkan untuk mendukung keputusan berbasis data.":
+      "<b>Ensuring the validity and accuracy of the data</b> produced to support data-driven decisions.",
+    // Pendidikan & bahasa
+    "Pendidikan & bahasa": "Education & languages", "Latar belakang.": "Background.",
+    "Sarjana Pendidikan Ekonomi": "Bachelor's degree in Economic Education",
+    "Universitas Pendidikan Indonesia — Fakultas Pendidikan Ekonomi dan Bisnis": "Universitas Pendidikan Indonesia — Faculty of Economics and Business Education",
+    "Bahasa Indonesia": "Indonesian",
+    // Kontak
+    "Butuh orang yang teliti dengan data? Mari berbicara.": "Need someone detail-oriented with data? <em>Let's talk.</em>",
+    "Saya terbuka untuk posisi Data Analyst, Data Support, atau Performance Monitoring. Cara tercepat menghubungi saya adalah lewat WhatsApp atau email.":
+      "I'm open to Data Analyst, Data Support, or Performance Monitoring roles. The quickest way to reach me is via WhatsApp or email.",
+    "Chat WhatsApp": "Chat on WhatsApp", "Telepon / WhatsApp": "Phone / WhatsApp", "Lihat profil LinkedIn": "View LinkedIn profile"
+  };
+
+  const EN_ATTR = {
+    "Foto Muhammad Isnan": "Photo of Muhammad Isnan",
+    "Perbesar gambar alur job Pentaho": "Enlarge the Pentaho job flow image",
+    "Alur job ETL Pentaho: pembuatan tabel LIS, 21 langkah insert, pembuatan tabel DWH, index, dan notifikasi Telegram":
+      "Pentaho ETL job flow: LIS table creation, 21 insert steps, DWH table creation, indexes, and Telegram notifications",
+    "Buka demo dashboard sales": "Open the sales dashboard demo",
+    "Dashboard Target vs Achievement: tabel nasional, regional, dan peringkat cabang (data dummy)":
+      "Target vs Achievement dashboard: national and regional tables and branch ranking (dummy data)",
+    "Buka demo interaktif dashboard rekonsiliasi": "Open the interactive reconciliation dashboard demo",
+    "Dashboard rekonsiliasi LIS dan Billing: total periode, total hak mitra, dan daftar periode (data dummy)":
+      "LIS and Billing reconciliation dashboard: total periods, total partner share, and period list (dummy data)",
+    "Buka aplikasi Pace": "Open the Pace app",
+    "Tampilan aplikasi Pace di ponsel: formulir berat, tinggi, umur, aktivitas, dan tujuan":
+      "Pace app on a phone: form for weight, height, age, activity level, and goal",
+    "Linimasa karier": "Career timeline"
+  };
+
+  const EN_SQL = [
+`-- Monthly sales per region, plus a national total row
+SELECT COALESCE(p.region, 'NATIONAL') AS region,
+       SUM(CASE WHEN s.period = '202401' THEN s.sales_total ELSE 0 END) AS sales_jan,
+       SUM(CASE WHEN s.period = '202402' THEN s.sales_total ELSE 0 END) AS sales_feb,
+       SUM(CASE WHEN s.period = '202403' THEN s.sales_total ELSE 0 END) AS sales_mar
+       -- the following months use the same pattern
+FROM dwh.project_dim p
+LEFT JOIN dwh.cluster_sales_mart s ON s.cluster_id = p.cluster_id
+GROUP BY ROLLUP (p.region);`,
+`-- 1) How fresh is the source data?
+SELECT MAX(order_date) FROM dwh.order_detail;
+
+-- 2) Sales count per day in the processed (mart) table
+SELECT TO_CHAR(sale_date, 'YYYYMMDD') AS dt, COUNT(1)
+FROM dwh.sales_fact
+WHERE period = '202411'
+GROUP BY 1;
+
+-- 3) Order count per day in the source table, to compare with no. 2
+SELECT TO_CHAR(order_date, 'YYYYMMDD') AS dt, COUNT(1)
+FROM dwh.order_detail
+WHERE TO_CHAR(order_date, 'YYYYMM') = '202411'
+GROUP BY 1;`,
+`-- PL package sales per cluster (Jan-Sep 2024) with project attributes
+SELECT a.period, TO_CHAR(a.sale_date, 'YYYYMMDD') AS sale_date,
+       a.service_id, a.package_name, a.channel,
+       a.cluster_id, p.project_name, p.partnership_type,
+       p.area, p.region, p.branch
+FROM dwh.sales_fact a
+LEFT JOIN dwh.project_dim p ON a.cluster_id = p.cluster_id
+WHERE a.period IN ('202401', '202402', '202403', '202404', '202405',
+                   '202406', '202407', '202408', '202409')
+  AND a.sales_status LIKE '%SALES%'
+  AND a.product_line = 'PL'
+  AND p.partnership_type = 'Type A'
+ORDER BY a.period;`
+  ];
+
+  const META_EN = {
+    description: "Portfolio of Muhammad Isnan, a Data Analyst and Data Support specialist with 9+ years of experience in data validation, database management, and sales performance analysis in the telecommunications industry.",
+    ogDescription: "9+ years managing data, dashboards, and KPI reports in large-scale telecommunications."
+  };
+
+  const WS = new RegExp("[" + String.fromCharCode(32, 9, 10, 13, 160) + "]+", "g");
+  const norm = s => s.replace(WS, " ").trim();
+  const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  const ALLOWED = ["B", "EM", "STRONG", "SMALL", "BR"];
+  const SKIP = ["script", "style", "svg", "pre", "code", "noscript"];
+  const store = [];
+  let prepared = false;
+
+  function prepare() {
+    const walk = el => {
+      if (SKIP.includes(el.tagName.toLowerCase())) return;
+      if (el !== document.body) {
+        const key = norm(el.textContent);
+        if (key && has(EN, key) && [...el.querySelectorAll("*")].every(c => ALLOWED.includes(c.tagName))) {
+          store.push({ el, id: el.innerHTML, key });
+          return;
+        }
+      }
+      ["alt", "aria-label", "title"].forEach(a => {
+        const v = el.getAttribute(a);
+        if (v && has(EN_ATTR, norm(v))) store.push({ el, attr: a, id: v, key: norm(v) });
+      });
+      el.childNodes.forEach(n => {
+        if (n.nodeType === 1) walk(n);
+        else if (n.nodeType === 3) { const k = norm(n.nodeValue); if (k && has(EN, k)) store.push({ node: n, id: n.nodeValue, key: k }); }
+      });
+    };
+    walk(document.body);
+    prepared = true;
+  }
+
+  const metaDesc = document.querySelector('meta[name="description"]');
+  const metaOg = document.querySelector('meta[property="og:description"]');
+  const META_ID = { description: metaDesc && metaDesc.content, ogDescription: metaOg && metaOg.content };
+
+  function setLang(l) {
+    if (!prepared) prepare();
+    const en = l === "en";
+    window.__lang = l;
+    store.forEach(s => {
+      if (s.attr) s.el.setAttribute(s.attr, en ? EN_ATTR[s.key] : s.id);
+      else if (s.node) {
+        const v = s.id, lead = v.length - v.trimStart().length, tail = v.trimEnd().length;
+        s.node.nodeValue = en ? v.slice(0, lead) + EN[s.key] + v.slice(tail) : v;
+      } else s.el.innerHTML = en ? EN[s.key] : s.id;
+    });
+    document.querySelectorAll(".q-code").forEach((box, i) => {
+      const raw = en ? EN_SQL[i] : box.dataset.rawId;
+      box.dataset.cur = raw;
+      box.querySelector("code").innerHTML = hl(raw);
+    });
+    if (metaDesc) metaDesc.content = en ? META_EN.description : META_ID.description;
+    if (metaOg) metaOg.content = en ? META_EN.ogDescription : META_ID.ogDescription;
+    document.documentElement.lang = l;
+    document.querySelectorAll(".langsw button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
+    try { localStorage.setItem("lang", l); } catch (e) {}
+  }
+
+  document.querySelectorAll(".langsw button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  (function initLang() {
+    let l = "id";
+    try { l = localStorage.getItem("lang") || "id"; } catch (e) {}
+    const q = new URLSearchParams(location.search).get("lang");
+    if (q === "en" || q === "id") l = q;
+    window.__lang = "id";
+    if (l === "en") setLang("en");
+    else document.querySelectorAll(".langsw button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === "id")));
+  })();
 </script>
 </body>
 </html>

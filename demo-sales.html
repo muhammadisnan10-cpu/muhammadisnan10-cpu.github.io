@@ -143,5 +143,21 @@ function draw() {
 }
 draw();
 </script>
+<script>
+  // Banner demo mengikuti pilihan bahasa dari halaman utama (disimpan di localStorage)
+  (function () {
+    var l = "id";
+    try { l = localStorage.getItem("lang") || "id"; } catch (e) {}
+    var q = new URLSearchParams(location.search).get("lang");
+    if (q === "en" || q === "id") l = q;
+    if (l !== "en") return;
+    var bar = document.querySelector(".demo-bar");
+    if (!bar) return;
+    var s = bar.querySelector("span"), a = bar.querySelector("a");
+    if (s) s.textContent = "DEMO · All data on this page is dummy data generated automatically in your browser. (The interface is in Indonesian.)";
+    if (a) a.textContent = "← Back to portfolio";
+    document.documentElement.lang = "en";
+  })();
+</script>
 </body>
 </html>
